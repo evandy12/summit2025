@@ -26,7 +26,7 @@ include 'includes/header.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
 <div class="registration-container">
-    <form id="registrationForm">
+    <form id="registrationForm" enctype="multipart/form-data" method="POST">
 
     <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 
@@ -77,10 +77,41 @@ include 'includes/header.php';
         <input type="text" id="organization" name="organization" required><br>
 
         <label for="position">Position:</label>
-        <input type="text" id="position" name="position" required><br>
+        <select id="position" name="position" required>
+            <option value="">Select</option>
+            <option value="Professor/Faculty">Professor/Faculty</option>
+            <option value="Higher Education Administration">Higher Education Administration</option>
+            <option value="Student/Graduate Student/Postdoc">Student/Graduate Student/Postdoc</option>
+            <option value="Other Researcher">Other Researcher</option>
+            <option value="Executive/C-Suite">Executive/C-Suite</option>
+            <option value="Senior Vice President/Vice President">Senior Vice President/Vice President</option>
+            <option value="Owner">Owner</option>
+            <option value="Senior Director/Director">Senior Director/Director</option>
+            <option value="Senior Manager/Manager">Senior Manager/Manager</option>
+            <option value="Specialist/Coordinator">Specialist/Coordinator</option>
+            <option value="Other Supply Chain Professional">Other Supply Chain Professional</option>
+            <option value="Other Nonprofit or NGO Professional">Other Nonprofit or NGO Professional</option>
+            <option value="Doctor">Doctor</option>
+            <option value="Pharmacist">Pharmacist</option>
+            <option value="Other Healthcare Professional">Other Healthcare Professional</option>
+            <option value="Event Staff">Event Staff</option>
+            <option value="Other">Other</option>
+        </select><br>
+        <div id="idCardUploadWrapper" style="display:none;">
+    <label for="id_card">Upload a Photo of Student ID Card:</label>
+    <input type="file" id="id_card" name="id_card" accept="image/*">
+</div>
 
         <label for="sector">Sector:</label>
-        <input type="text" id="sector" name="sector" required><br>
+        <select id="sector" name="sector" required>
+            <option value="">Select</option>
+            <option value="Agriculture">Agriculture</option>
+            <option value="Business">Business</option>
+            <option value="Government">Government</option>
+            <option value="Health care">Health care</option>
+            <option value="Higher Education">Higher Education</option>
+            <option value="Nonprofit or NGO">Nonprofit or NGO</option>
+        </select><br>
 
         <label for="city">City:</label>
         <input type="text" id="city" name="city" required><br>
@@ -585,6 +616,20 @@ include 'includes/header.php';
             allowClear: true
         });
     });
+</script>
+
+<script>
+$(document).ready(function () {
+    $('#position').on('change', function () {
+        const selected = $(this).val();
+        if (selected === 'Student/Graduate Student/Postdoc') {
+            $('#idCardUploadWrapper').show();
+        } else {
+            $('#idCardUploadWrapper').hide();
+            $('#id_card').val("");
+        }
+    });
+});
 </script>
 
 <?php include 'includes/footer.php'; ?>

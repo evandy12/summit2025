@@ -33,12 +33,12 @@ $headers = fgetcsv($fileHandle);
         }
         .modal-content {
             background-color: #fff;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 8px;
+            margin: 10% auto;
+            padding: 30px;
+            border: 1px solid #888;
             width: 50%;
             max-width: 700px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
         }
         .close {
             color: #aaa;
@@ -52,28 +52,27 @@ $headers = fgetcsv($fileHandle);
             text-decoration: none;
             cursor: pointer;
         }
-        .modal-content label {
+        label {
             display: block;
-            margin-top: 10px;
+            margin-bottom: 5px;
             font-weight: bold;
         }
         input.edit-input {
             width: 100%;
             padding: 8px;
-            margin-top: 5px;
             margin-bottom: 15px;
+            border-radius: 5px;
             border: 1px solid #ccc;
-            border-radius: 4px;
         }
-        #saveEdit {
-            padding: 10px 20px;
+        button#saveEdit {
             background-color: #007bff;
-            color: white;
+            color: #fff;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-        #saveEdit:hover {
+        button#saveEdit:hover {
             background-color: #0056b3;
         }
     </style>
@@ -152,9 +151,9 @@ $headers = fgetcsv($fileHandle);
                 currentRow = $(this).closest('tr');
                 const rowData = table.row(currentRow).data();
                 form.innerHTML = '';
-                const headers = <?php echo json_encode(array_slice($headers, 0)); ?>;
+                const headers = <?php echo json_encode($headers); ?>;
                 rowData.slice(2, rowData.length - 1).forEach((value, index) => {
-                    const label = headers[index] || `Field ${index + 1}`;
+                    const label = headers[index];
                     form.innerHTML += `<label>${label}</label><input type='text' class='edit-input' value='${value}'>`;
                 });
                 modal.style.display = "block";
