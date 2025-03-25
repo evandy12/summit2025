@@ -12,6 +12,14 @@ $currentPage = 'register';
 include 'includes/header.php';
 ?>
 
+<!-- Add a header area for Summit Registrations -->
+
+<header class="page-header">
+    <div class="container">
+        <h1>Summit Registrations</h1>
+    </div>
+</header>
+
 <!-- Include Select2 CSS and JS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -26,8 +34,8 @@ include 'includes/header.php';
         <input type="email" id="email" name="email" required><br>
 
         <label>Please select from the following options: </label><br>
-        <input type="radio" name="attendance" value="In-Person"> In-Person Attendee<br>
-        <input type="radio" name="attendance" value="Virtual"> Virtual Attendee<br>
+        <input type="radio" name="attendance" value="In-Person" required> In-Person Attendee<br>
+        <input type="radio" name="attendance" value="Virtual" required> Virtual Attendee<br>
 
         <label for="prefix">Prefix:</label>
         <select id="prefix" name="prefix">
@@ -458,6 +466,17 @@ include 'includes/header.php';
         border-color: #0056b3; /* Focus border color */
         box-shadow: 0 0 5px rgba(0, 86, 179, 0.5); /* Focus shadow */
         outline: none; /* Remove outline */
+    }
+
+    .header-area {
+        text-align: center; /* Center the header text */
+        margin-bottom: 20px; /* Space below the header */
+    }
+
+    .header-area h1 {
+        font-size: 2em; /* Adjust font size */
+        color: #333; /* Change color if needed */
+        font-weight: bold; /* Make the header bold */
     }
 </style>
 

@@ -1,16 +1,12 @@
 <?php
 $file = 'registrations.csv';
 
-// Check if the file exists
 if (!file_exists($file)) {
     die("<h2>No registration data found.</h2>");
 }
 
-// Open the CSV file
 $fileHandle = fopen($file, "r");
-$headers = fgetcsv($fileHandle); // Read column headers
-
-// Display as an HTML table with improved styling
+$headers = fgetcsv($fileHandle);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,27 +14,164 @@ $headers = fgetcsv($fileHandle); // Read column headers
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration List</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.7.0/css/select.dataTables.min.css">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         h2 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #007bff; color: white; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 50%;
+            max-width: 700px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-content label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input.edit-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #saveEdit {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #saveEdit:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <h2>Registration List</h2>
-    <table>
-        <tr>
-            <?php foreach ($headers as $header) { echo "<th>" . htmlspecialchars($header) . "</th>"; } ?>
-        </tr>
-        <?php while (($data = fgetcsv($fileHandle)) !== FALSE) { ?>
+    <table id="registrationTable" class="display nowrap" style="width:100%">
+        <thead>
             <tr>
-                <?php foreach ($data as $cell) { echo "<td>" . htmlspecialchars($cell) . "</td>"; } ?>
+                <th>#</th>
+                <th>Select</th>
+                <?php foreach ($headers as $header) { echo "<th>" . htmlspecialchars($header) . "</th>"; } ?>
+                <th>Action</th>
             </tr>
-        <?php } ?>
+        </thead>
+        <tbody>
+            <?php $index = 1; while (($data = fgetcsv($fileHandle)) !== FALSE) { ?>
+                <tr>
+                    <td><?= $index++ ?></td>
+                    <td><input type="checkbox" class="row-select"></td>
+                    <?php foreach ($data as $cell) { echo "<td>" . htmlspecialchars($cell) . "</td>"; } ?>
+                    <td><button class="edit-btn">Edit</button></td>
+                </tr>
+            <?php } ?>
+        </tbody>
     </table>
+
+    <!-- Modal for Editing -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Edit Registration Entry</h3>
+            <form id="editForm"></form>
+            <button id="saveEdit">Save Changes</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.datatables.net/select/1.7.0/js/dataTables.select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            const table = $('#registrationTable').DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    'copy', 'csv', 'excel',
+                    {
+                        extend: 'pdfHtml5',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    'colvis'
+                ],
+                scrollX: true
+            });
+
+            const modal = document.getElementById("editModal");
+            const span = document.getElementsByClassName("close")[0];
+            const form = document.getElementById("editForm");
+            let currentRow = null;
+
+            $('#registrationTable tbody').on('click', '.edit-btn', function () {
+                currentRow = $(this).closest('tr');
+                const rowData = table.row(currentRow).data();
+                form.innerHTML = '';
+                const headers = <?php echo json_encode(array_slice($headers, 0)); ?>;
+                rowData.slice(2, rowData.length - 1).forEach((value, index) => {
+                    const label = headers[index] || `Field ${index + 1}`;
+                    form.innerHTML += `<label>${label}</label><input type='text' class='edit-input' value='${value}'>`;
+                });
+                modal.style.display = "block";
+            });
+
+            span.onclick = function() { modal.style.display = "none"; }
+            window.onclick = function(event) { if (event.target == modal) modal.style.display = "none"; }
+
+            document.getElementById("saveEdit").onclick = function () {
+                const inputs = document.querySelectorAll(".edit-input");
+                inputs.forEach((input, i) => {
+                    table.cell(currentRow, i + 2).data(input.value).draw();
+                });
+                modal.style.display = "none";
+            };
+        });
+    </script>
 </body>
 </html>
 <?php fclose($fileHandle); ?>
