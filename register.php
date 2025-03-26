@@ -18,7 +18,7 @@ include 'includes/header.php';
     <div class="container">
         <h1>Summit Registrations</h1>
     </div>
-</header>
+</header> 
 
 <!-- Include Select2 CSS and JS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
@@ -26,6 +26,7 @@ include 'includes/header.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
 <div class="registration-container">
+    <p>Welcome to the Summit Registrations! We are excited to have you join us for this event. Please fill out the registration form below to secure your spot. If you have any questions or need assistance, feel free to reach out to us.</p>
     <form id="registrationForm" enctype="multipart/form-data" method="POST">
 
     <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">

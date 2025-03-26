@@ -37,3 +37,4 @@ while (($row = fgetcsv($handle)) !== false) {
 fclose($handle);
 echo json_encode(["exists" => false]);
 ?>
+ 

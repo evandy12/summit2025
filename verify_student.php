@@ -111,7 +111,7 @@ $verifications = file_exists($verificationFile) ? json_decode(file_get_contents(
         <button onclick="updateStatus('Rejected')">Reject</button>
         <button onclick="closeModal()">Close</button>
     </div>
-</div>
+</div> 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>

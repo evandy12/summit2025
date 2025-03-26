@@ -391,7 +391,7 @@ include 'includes/header.php';
          <div class="container">
              <div class="row justify-content-center">
                  <div class="col-lg-10 text-center">
-                     <h2 class="text-success mb-4" style="color:#f0f8ff !important;">Previous Summit Highlights</h2>
+                     <h2 class="text-success mb-4" style="color:#f0f8ff !important ;">Previous Summit Highlights</h2>
                      <div class="video-placeholder" onclick="openFullscreen()">
                          <img src="images/prevsummit/bmic1.jpg" alt="Video Thumbnail" class="img-fluid">
                          <div class="play-overlay">
