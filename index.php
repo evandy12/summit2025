@@ -252,8 +252,63 @@ include 'includes/header.php';
         </div>
     </section>
 
+    
+    <section class="sponsors py-5 bg-light">
+    <?php
+        // Number of sponsor/partner images
+        $sponsorCount = 3; // ← Update this number as needed
+        ?>
+
+        <div class="carousel-container">
+            <h2 class="carousel-title">Our Partners & Sponsors</h2>
+            <div class="carousel-wrapper" id="sponsorCarousel">
+                <?php for ($i = 1; $i <= $sponsorCount; $i++): ?>
+                    <div class="carousel-slide">
+                        <img src="images/sponsorsandpartners/<?php echo $i; ?>.jpg" alt="Sponsor <?php echo $i; ?>">
+                    </div>
+                <?php endfor; ?>
+            </div>
+        </div>
+
+    </section>
+
+
+
+
     <!-- Previous Summit Video Section -->
     <style>
+        .carousel-container {
+            text-align: center;
+            margin: 60px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            max-width: 1200px;
+        }
+
+        .carousel-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .carousel-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .carousel-slide img {
+            height: 200px;
+            width: auto;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .carousel-slide img:hover {
+            transform: scale(1.1);
+        }
         .video-section {
             padding: 4rem 0;
             background: #f8f9fa;
@@ -332,11 +387,11 @@ include 'includes/header.php';
             flex-grow: 1;
         }
     </style>
-    <section class="video-section">
+    <section class="video-section" style="background-color: #32A879;">
          <div class="container">
              <div class="row justify-content-center">
                  <div class="col-lg-10 text-center">
-                     <h2 class="text-success mb-4">Previous Summit Highlights</h2>
+                     <h2 class="text-success mb-4" style="color:#f0f8ff !important;">Previous Summit Highlights</h2>
                      <div class="video-placeholder" onclick="openFullscreen()">
                          <img src="images/prevsummit/bmic1.jpg" alt="Video Thumbnail" class="img-fluid">
                          <div class="play-overlay">
