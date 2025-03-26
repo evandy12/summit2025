@@ -174,8 +174,8 @@ include 'includes/header.php';
                                     </a>
                                 </li>
                             </ul>
-                        </div>                    
-                       
+                        </div>
+                        <p class="mb-2"><strong>Introduction Letter:</strong> Anyone who needs or requires an introduction letter for their VISAs can reach out to us via email at <a href="mailto:cdankwa@carisca.knust.edu.gh">cdankwa@carisca.knust.edu.gh</a> or over WhatsApp at +233 24 413 1052.</p>
                     </div>
                 </div>
             </div>
