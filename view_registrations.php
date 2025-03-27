@@ -7,6 +7,10 @@ if (!file_exists($file)) {
 
 $fileHandle = fopen($file, "r");
 $headers = fgetcsv($fileHandle);
+
+if (!$headers || count($headers) < 2) {
+    die("<h2>Error: CSV file may be corrupt or only contains one column.</h2>");
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,107 +19,119 @@ $headers = fgetcsv($fileHandle);
     <title>Registration List</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.7.0/css/select.dataTables.min.css">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         h2 { text-align: center; }
+        table.dataTable td { white-space: nowrap; }
+        .action-buttons { display: flex; gap: 10px; }
         .modal {
             display: none;
             position: fixed;
-            z-index: 999;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
         }
         .modal-content {
             background-color: #fff;
-            margin: 10% auto;
-            padding: 30px;
-            border: 1px solid #888;
-            width: 50%;
-            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
             border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            text-align: left;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
         }
-        .close {
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            color: #aaa;
+        .modal-content h3 {
+            text-align: center;
+            margin-bottom: 20px;
         }
-        .close:hover, .close:focus {
-            color: black;
-            cursor: pointer;
+        .modal-content label {
+            display: block;
+            margin: 10px 0 5px;
         }
-        input.edit-input, input#deleteConfirmInput {
+        .modal-content input, .modal-content select {
             width: 100%;
             padding: 8px;
-            margin-bottom: 15px;
-            border-radius: 5px;
             border: 1px solid #ccc;
+            border-radius: 5px;
         }
-        button {
+        .modal-content button {
+            margin-top: 20px;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
+            background-color: #007bff;
+            color: white;
             cursor: pointer;
         }
-        button#saveEdit { background-color: #007bff; color: #fff; }
-        button#confirmDelete { background-color: #dc3545; color: #fff; }
+        .modal-content button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
 <h2>Registration List</h2>
-<button id="deleteSelected">Delete Selected</button>
 <table id="registrationTable" class="display nowrap" style="width:100%">
     <thead>
         <tr>
-            <th>#</th>
-            <th>Select</th>
-            <?php foreach ($headers as $header) echo "<th>" . htmlspecialchars($header) . "</th>"; ?>
-            <th>Action</th>
+            <th><input type="checkbox" id="selectAll"></th>
+            <?php foreach ($headers as $header): ?>
+                <th><?php echo htmlspecialchars($header); ?></th>
+            <?php endforeach; ?>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         <?php
-        $index = 1;
-        $isFirstRow = true;
-        while (($data = fgetcsv($fileHandle)) !== FALSE) {
-            if ($isFirstRow) {
-                $isFirstRow = false;
-                continue; // skip duplicate header row
+        while (($data = fgetcsv($fileHandle)) !== false) {
+            $expectedCols = count($headers);
+            $cellCount = count($data);
+            if ($cellCount < $expectedCols) {
+                $data = array_pad($data, $expectedCols, '');
+            } elseif ($cellCount > $expectedCols) {
+                $data = array_slice($data, 0, $expectedCols);
             }
+
             echo "<tr>";
-            echo "<td>" . $index++ . "</td>";
             echo "<td><input type='checkbox' class='row-select'></td>";
-            foreach ($data as $cell) echo "<td>" . htmlspecialchars($cell) . "</td>";
-            echo "<td><button class='edit-btn'>Edit</button></td>";
+            foreach ($data as $cell) {
+                echo "<td>" . htmlspecialchars($cell) . "</td>";
+            }
+            echo "<td class='action-buttons'>
+                    <button class='edit-btn'>Edit</button>
+                    <button class='delete-btn'>Delete</button>
+                  </td>";
             echo "</tr>";
         }
+        fclose($fileHandle);
         ?>
     </tbody>
 </table>
 
-<!-- Edit Modal -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3>Edit Registration Entry</h3>
-        <form id="editForm"></form>
-        <button id="saveEdit">Save Changes</button>
-    </div>
-</div>
-
 <!-- Delete Modal -->
 <div id="deleteModal" class="modal">
     <div class="modal-content">
-        <span class="close">&times;</span>
         <h3>Confirm Deletion</h3>
         <p>Type <strong>DELETE</strong> below to confirm:</p>
         <input type="text" id="deleteConfirmInput" placeholder="Type DELETE">
-        <button id="confirmDelete">Delete</button>
+        <br><br>
+        <button id="confirmDeleteBtn">Confirm Delete</button>
+        <button onclick="closeDeleteModal()">Cancel</button>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>Edit Entry</h3>
+        <form id="editForm"></form>
+        <button id="saveEditBtn">Save</button>
+        <button onclick="closeEditModal()">Cancel</button>
     </div>
 </div>
 
@@ -124,93 +140,94 @@ $headers = fgetcsv($fileHandle);
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
-<script src="https://cdn.datatables.net/select/1.7.0/js/dataTables.select.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-
 <script>
-$(document).ready(function() {
     const headers = <?php echo json_encode($headers); ?>;
     const table = $('#registrationTable').DataTable({
         dom: 'Bfrtip',
-        buttons: ['copy', 'csv', 'excel', 'pdf', 'print', 'colvis'],
+        buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
         scrollX: true
     });
 
-    let currentRow = null;
+    let rowToDelete = null;
+    let rowToEdit = null;
+
+    $(document).on('click', '.delete-btn', function () {
+        rowToDelete = $(this).closest('tr');
+        $('#deleteModal').show();
+    });
+
+    $('#confirmDeleteBtn').on('click', function () {
+        if ($('#deleteConfirmInput').val() === 'DELETE') {
+            table.row(rowToDelete).remove().draw();
+            saveTableDataToCSV();
+            closeDeleteModal();
+        } else {
+            alert('You must type DELETE to confirm.');
+        }
+    });
+
+    $('#selectAll').on('click', function () {
+        $('input.row-select').prop('checked', this.checked);
+    });
 
     $(document).on('click', '.edit-btn', function () {
-        currentRow = $(this).closest('tr');
-        const rowData = table.row(currentRow).data();
-        $("#editForm").html('');
-        rowData.slice(2, rowData.length - 1).forEach((val, i) => {
-            $("#editForm").append(`<label>${headers[i]}</label><input type='text' class='edit-input' value='${val}'>`);
-        });
-        $("#editModal").show();
-    });
-
-    $(".close").on('click', function () {
-        $(".modal").hide();
-    });
-
-    $(window).on('click', function (event) {
-        if ($(event.target).hasClass("modal")) $(".modal").hide();
-    });
-
-    $('#saveEdit').on('click', function () {
-        const inputs = $(".edit-input");
-        inputs.each(function(i) {
-            table.cell(currentRow, i + 2).data($(this).val()).draw();
-        });
-        $("#editModal").hide();
-    });
-
-    $('#deleteSelected').on('click', function () {
-        const selectedRows = [];
-        table.rows().every(function(rowIdx) {
-            if ($(this.node()).find('input.row-select').is(':checked')) {
-                selectedRows.push(rowIdx);
+        rowToEdit = $(this).closest('tr');
+        const rowData = table.row(rowToEdit).data();
+        $('#editForm').html('');
+        for (let i = 1; i <= headers.length; i++) {
+            const header = headers[i-1];
+            const value = rowData[i];
+            if (header === 'Verification Status') {
+                $('#editForm').append(`
+                    <label>${header}</label>
+                    <select name='${header}'>
+                        <option value='Pending' ${value === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value='Verified (No Payment)' ${value === 'Verified (No Payment)' ? 'selected' : ''}>Verified (No Payment)</option>
+                        <option value='Verified (With Payment)' ${value === 'Verified (With Payment)' ? 'selected' : ''}>Verified (With Payment)</option>
+                    </select>
+                `);
+            } else {
+                $('#editForm').append(`<label>${header}</label><input type='text' name='${header}' value='${value}'>`);
             }
-        });
-
-        if (selectedRows.length === 0) {
-            alert("No rows selected.");
-            return;
         }
-
-        $("#deleteModal").show();
-
-        $('#confirmDelete').off('click').on('click', function () {
-            if ($('#deleteConfirmInput').val() !== 'DELETE') {
-                alert("You must type DELETE to confirm.");
-                return;
-            }
-
-            selectedRows.sort((a, b) => b - a); // delete from bottom up
-            selectedRows.forEach(idx => table.row(idx).remove().draw());
-            $("#deleteModal").hide();
-
-            // Send updated data (including headers)
-            const updatedData = [headers];
-            table.rows().every(function () {
-                const row = this.data().slice(2, -1);
-                updatedData.push(row);
-            });
-
-            $.post('write_csv.php', { rows: JSON.stringify(updatedData) }, function(response) {
-                if (response.success) {
-                    alert("Deletion successful.");
-                } else {
-                    alert("Failed to save: " + response.error);
-                }
-            }, 'json');
-        });
+        $('#editModal').show();
     });
-});
+
+    $('#saveEditBtn').on('click', function (e) {
+        e.preventDefault();
+        const updatedValues = $('#editForm').serializeArray();
+        updatedValues.forEach((item, index) => {
+            table.cell(rowToEdit, index + 1).data(item.value);
+        });
+        table.draw();
+        saveTableDataToCSV();
+        closeEditModal();
+    });
+
+    function closeDeleteModal() {
+        $('#deleteModal').hide();
+        $('#deleteConfirmInput').val('');
+    }
+
+    function closeEditModal() {
+        $('#editModal').hide();
+    }
+
+    function saveTableDataToCSV() {
+        const allData = [];
+        const rows = table.rows().data().toArray();
+        allData.push(headers);
+
+        rows.forEach(row => {
+            allData.push(row.slice(1, -1));
+        });
+
+        $.post('write_csv.php', { rows: JSON.stringify(allData) }, function(response) {
+            if (!response.success) {
+                alert('Error saving CSV: ' + response.error);
+            }
+        }, 'json');
+    }
 </script>
 </body>
 </html>
-<?php fclose($fileHandle); ?>
- 

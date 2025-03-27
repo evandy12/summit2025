@@ -1,7 +1,5 @@
 <?php
-$idFolder = 'id_verifications';
 $csvFile = 'registrations.csv';
-$verificationFile = 'student_verifications.json';
 
 if (!file_exists($csvFile)) {
     die("<h2>No registration data found.</h2>");
@@ -12,10 +10,9 @@ $headers = array_shift($rows);
 $emailIndex = array_search('Email', $headers);
 $nameIndex = array_search('First Name', $headers);
 $institutionIndex = array_search('Organization', $headers);
+$statusIndex = array_search('Verification Status', $headers);
 
-$verifications = file_exists($verificationFile) ? json_decode(file_get_contents($verificationFile), true) : [];
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,15 +53,12 @@ $verifications = file_exists($verificationFile) ? json_decode(file_get_contents(
 </head>
 <body>
 <h2>Student ID Verification</h2>
-<p>Total Students Registered: <strong><?php echo count(array_filter($rows, function($r) use ($headers) {
-    return stripos($r[array_search('Position', $headers)], 'Student') !== false;
-})); ?></strong></p>
 
 <label for="statusFilter">Filter by Status:</label>
 <select id="statusFilter">
     <option value="">All</option>
-    <option value="Verified">Verified</option>
-    <option value="Rejected">Rejected</option>
+    <option value="Verified (No Payment)">Verified (No Payment)</option>
+    <option value="Verified (With Payment)">Verified (With Payment)</option>
     <option value="Pending">Pending</option>
 </select>
 
@@ -82,13 +76,12 @@ $verifications = file_exists($verificationFile) ? json_decode(file_get_contents(
         <?php
         $count = 1;
         foreach ($rows as $row) {
-            $position = $row[array_search('Position', $headers)];
-            if (stripos($position, 'Student') !== false) {
+            if (stripos($row[array_search('Position', $headers)], 'Student') !== false) {
                 $email = $row[$emailIndex];
                 $name = $row[$nameIndex];
                 $institution = $row[$institutionIndex];
-                $status = $verifications[$email] ?? 'Pending';
-                echo "<tr class='student-row' data-email='$email' data-name='$name' data-institution='$institution' data-status='$status'>
+                $status = $row[$statusIndex] ?? 'Pending';
+                echo "<tr class='student-row' data-email='$email' data-name='$name' data-institution='$institution'>
                         <td>$count</td>
                         <td>" . htmlspecialchars($name) . "</td>
                         <td>" . htmlspecialchars($email) . "</td>
@@ -107,33 +100,44 @@ $verifications = file_exists($verificationFile) ? json_decode(file_get_contents(
         <h3 id="studentName"></h3>
         <p id="studentInstitution"></p>
         <div id="studentImage"></div>
-        <button onclick="updateStatus('Verified')">Verify</button>
-        <button onclick="updateStatus('Rejected')">Reject</button>
+        <button onclick="updateStatus('Verified (No Payment)')">Verify (No Payment)</button>
+        <button onclick="updateStatus('Verified (With Payment)')">Verify (With Payment)</button>
+        <button onclick="updateStatus('Pending')">Set to Pending</button>
         <button onclick="closeModal()">Close</button>
     </div>
-</div> 
+</div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script>
     const table = $('#studentTable').DataTable();
     let currentEmail = '';
+    const headers = <?php echo json_encode($headers); ?>;
+    let fullCSV = <?php echo json_encode($rows); ?>;
+    const emailIndex = headers.indexOf('Email');
+    const statusIndex = headers.indexOf('Verification Status');
 
     function closeModal() {
         document.getElementById("modalOverlay").style.display = "none";
     }
 
     function updateStatus(status) {
-        fetch('update_verification.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'email=' + encodeURIComponent(currentEmail) + '&status=' + status
-        })
-        .then(res => res.text())
-        .then(() => {
-            document.querySelector(`[data-email='${currentEmail}'] .status-cell`).textContent = status;
-            closeModal();
+        const newCSV = [headers];
+        fullCSV.forEach(row => {
+            if (row[emailIndex] === currentEmail) {
+                row[statusIndex] = status;
+            }
+            newCSV.push(row);
         });
+
+        $.post('write_csv.php', { rows: JSON.stringify(newCSV) }, function(response) {
+            if (response.success) {
+                document.querySelector(`[data-email='${currentEmail}'] .status-cell`).textContent = status;
+                closeModal();
+            } else {
+                alert('Failed to save: ' + response.error);
+            }
+        }, 'json');
     }
 
     document.querySelectorAll('.student-row').forEach(row => {

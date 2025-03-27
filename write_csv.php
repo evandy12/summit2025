@@ -11,49 +11,60 @@ try {
 
     $input = json_decode($_POST['rows'], true);
 
-    if (!is_array($input) || count($input) < 1) {
+    if (!is_array($input) || count($input) < 2) {
         throw new Exception("Invalid or empty data provided.");
     }
 
-    // Load the original file for comparison
+    // Extract headers
+    $headers = $input[0];
+    $expectedCols = count($headers);
+
+    // Separate data rows
+    $dataRows = array_slice($input, 1);
+
+    // Read original emails to detect deletions
     $original = [];
-    if (($handle = fopen($file, 'r')) !== false) {
-        $headers = isset($original[0]) ? $original[0] : [];
+    if (file_exists($file) && ($handle = fopen($file, 'r')) !== false) {
+        $originalHeaders = fgetcsv($handle);
+        $emailIndex = array_search('Email', $originalHeaders);
         while (($row = fgetcsv($handle)) !== false) {
             $original[] = $row;
         }
         fclose($handle);
-    } else {
-        throw new Exception("Failed to read the existing file.");
     }
 
-    // Collect emails from updated data
-    $newEmails = array_map(function($r) use ($headers) {
-        return strtolower(trim($r[array_search('Email', $headers)]));
-    }, $input);
-
-    // Determine which emails were removed
-    $originalEmails = array_map(function($r) use ($headers) {
-        return strtolower(trim($r[array_search('Email', $headers)]));
+    $originalEmails = array_map(function ($r) use ($originalHeaders) {
+        return strtolower(trim($r[array_search('Email', $originalHeaders)] ?? ''));
     }, $original);
+
+    $newEmails = array_map(function ($r) use ($headers) {
+        return strtolower(trim($r[array_search('Email', $headers)] ?? ''));
+    }, $dataRows);
 
     $deletedEmails = array_diff($originalEmails, $newEmails);
 
-    // Delete matching ID photo files
+    // Delete ID photo files for deleted emails
     foreach ($deletedEmails as $email) {
         $safeName = str_replace(['@', '.'], '_', $email) . '.jpg';
         $path = "$idFolder/$safeName";
         if (file_exists($path)) {
-            unlink($path); // delete the file
+            unlink($path);
         }
     }
 
-    // Save new CSV
+    // Write cleaned data to CSV
     $fp = fopen($file, 'w');
     fputcsv($fp, $headers);
-    foreach ($input as $row) {
+
+    foreach ($dataRows as $row) {
+        if (count($row) < $expectedCols) {
+            $row = array_pad($row, $expectedCols, '');
+        } elseif (count($row) > $expectedCols) {
+            $row = array_slice($row, 0, $expectedCols);
+        }
         fputcsv($fp, $row);
     }
+
     fclose($fp);
 
     echo json_encode(["success" => true]);

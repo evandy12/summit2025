@@ -1,2 +1,3 @@
-
-Email,"Attendance Type",Prefix,"First Name","Middle Name","Last Name",Suffix,Gender,Organization,Position,Sector,City,State,Country,Continent,Phone,Comments,Certificate,"Previous Event","Email Opt-Out","Photo Release",Timestamp
+Email,"Attendance Type",Prefix,"First Name","Middle Name","Last Name",Suffix,Gender,Organization,Position,Sector,City,State,Country,Continent,Phone,Comments,Certificate,"Previous Event","Email Opt-Out","Photo Release",Timestamp,"ID Image","Verification Status"
+eachapi2@gmail.com,In-Person,Dr,Bem,,Amoah,Sr,Female,"OLAM Cocoa Ghana Limited",Executive/C-Suite,Business,Kumasi,Lagos,GH,Europe,0207351000,,No,Yes,Yes,Yes,"2025-03-27 08:16:54",,"Verified (No Payment)"
+eachapi@gmail.com,In-Person,Dr,Bem,,Amoah,Sr,Female,"OLAM Cocoa Ghana Limited","Student/Graduate Student/Postdoc",Business,Kumasi,Lagos,GH,Europe,0207351000,,No,Yes,Yes,Yes,"2025-03-27 08:17:11",eachapi_gmail_com.jpg,Pending
