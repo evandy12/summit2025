@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Location: login.php');
+    exit;
+}
 $file = 'registrations.csv';
 
 if (!file_exists($file)) {
@@ -72,10 +77,35 @@ if (!$headers || count($headers) < 2) {
         .modal-content button:hover {
             background-color: #0056b3;
         }
+        .header-bar a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .header-bar a:hover {
+            text-decoration: underline;
+        }
+        .header-bar {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
-<h2>Registration List</h2>
+<div class="header-bar">
+    <div>
+        <a href="dashboard.php">Dashboard</a>
+        <a href="view_registrations.php">Attendees</a>
+        <a href="view_presenter_registrations.php">Presenters</a>
+    </div>
+    <div><a href="logout.php">Logout</a></div>
+</div>
+<h2>Attendees Registration List</h2>
 <table id="registrationTable" class="display nowrap" style="width:100%">
     <thead>
         <tr>
