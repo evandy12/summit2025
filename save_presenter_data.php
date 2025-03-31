@@ -15,7 +15,7 @@ require 'src/Exception.php';
 
 header('Content-Type: application/json');
 
-$file = 'registrations.csv';
+$file = 'presenter_registrations.csv';
 $uploadDir = 'id_verifications/';
 $maxSize = 10 * 1024 * 1024; // 10MB max
 $allowedTypes = ['jpg', 'jpeg', 'png'];
@@ -97,22 +97,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     fputcsv($fileHandle, $data);
     fclose($fileHandle);
 
+    // Mail setup (optional - can be removed if not needed)
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true; 
+        $mail->SMTPAuth = true;
         $mail->Username = 'researchsummit@carisca.knust.edu.gh';
         $mail->Password = 'xbkf hxzm dwta llvk';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-        $mail->Timeout = 10;
-        $mail->SMTPKeepAlive = false;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = 465;
 
-        $mail->setFrom('researchsummit@carisca.knust.edu.gh', 'CARISCA Summit');
+        $mail->setFrom('researchsummit@carisca.knust.edu.gh', 'CARISCA Summit 2025');
         $mail->addAddress($email);
         $mail->isHTML(true);
-        $mail->Subject = 'CARISCA Summit 2025 Registration Confirmation';
+        $mail->Subject = 'CARISCA Summit 2025 Registration';
         $mail->Body = '
                     <table style="width:100%; max-width:600px; font-family: Arial, sans-serif; border-collapse: collapse;">
                         <tr>
@@ -125,7 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <td style="padding: 20px;">
                                 <p>Dear ' . sanitize_input($_POST["first-name"]) . ',</p>
 
-                                <p>Thank you for registering for <strong>CARISCA\'s 2025 Supply Chain Research Summit</strong>, 
+                                <p>Thank you for registering as a presenter for <strong>CARISCA\'s 2025 Supply Chain Research Summit</strong>, 
                                 <strong>July 16–18, 2025</strong>.</p>
 
                                 <p>For information on the summit venue and how to book lodging, visit the 
@@ -137,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <li>Amos Ato Eghan – <a href="mailto:aaeghan@carisca.knust.edu.gh">aaeghan@carisca.knust.edu.gh</a></li>
                                 </ul>
 
-                                <p>Thank you for your interest in supply chain research in Africa and for participating in this event.
+                                <p>Thank you for your interest in supply chain research in Africa and for participating as a presenter in this event.
                                 We are excited to have you join us.</p>
 
                                 <p>Sincerely,<br><strong>2025 Supply Chain Research Summit Planning Committee</strong></p>
@@ -150,14 +149,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </td>
                         </tr>
                     </table>';
-
         $mail->send();
-        echo json_encode(["success" => true, "message" => "Registration saved. You'll receive a confirmation email shortly."]);
-        exit;
     } catch (Exception $e) {
-        echo json_encode(["success" => true, "message" => "Registration saved. Email will be sent shortly."]);
-        exit;
+        // You can log or ignore mail error here
     }
+
+    echo json_encode(["success" => true, "message" => "Presenter registration saved successfully."]);
+    exit;
 } else {
     echo json_encode(["success" => false, "error" => "Invalid request"]);
     exit;

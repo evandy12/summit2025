@@ -549,21 +549,21 @@ include 'includes/header.php';
 
     let formData = new FormData(this);
 
-    fetch("write_csv.php", {
-  method: "POST",
-  body: formData
-})
-.then(response => response.json())
-.then(data => {
-  if (data.success) {
-    showModal("Submission Successful", "Your registration has been saved and confirmation email sent!", "index.php");
-  } else {
-    showModal("Submission Failed", "Error: " + data.error);
-  }
-})
-.catch(error => {
-  showModal("Submission Failed", "A network error occurred.");
-});
+    fetch("save_data.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showModal("Submission Successful", "Your registration has been saved successfully!", "index.php");
+        } else {
+            showModal("Submission Failed", "Error: " + data.error);
+        }
+    })
+    .catch(error => {
+        showModal("Submission Failed", "A network error occurred.");
+    });
 });
 
 </script>

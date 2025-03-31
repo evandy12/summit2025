@@ -97,67 +97,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     fputcsv($fileHandle, $data);
     fclose($fileHandle);
 
+    // === SEND CONFIRMATION EMAIL ===
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true; 
+        $mail->SMTPAuth = true;
         $mail->Username = 'researchsummit@carisca.knust.edu.gh';
         $mail->Password = 'xbkf hxzm dwta llvk';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
-        $mail->Timeout = 10;
-        $mail->SMTPKeepAlive = false;
 
-        $mail->setFrom('researchsummit@carisca.knust.edu.gh', 'CARISCA Summit');
+        $mail->setFrom('summit2025@carisca.knust.edu.gh', 'CARISCA Summit');
         $mail->addAddress($email);
-        $mail->isHTML(true);
-        $mail->Subject = 'CARISCA Summit 2025 Registration Confirmation';
-        $mail->Body = '
-                    <table style="width:100%; max-width:600px; font-family: Arial, sans-serif; border-collapse: collapse;">
-                        <tr>
-                            <td style="padding: 20px; background-color: #f5f5f5; text-align: center;">
-                                <img src="https://summit2025.carisca.org/images/logo/logo.png" alt="CARISCA Logo" style="max-width: 100%; height: auto;">
-                                <h2 style="margin-top: 10px; font-size: 20px; color: #333;">Centre for Applied Research and Innovation in Supply Chain – Africa</h2>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 20px;">
-                                <p>Dear ' . sanitize_input($_POST["first-name"]) . ',</p>
+        $mail->Subject = 'CARISCA Summit Registration Confirmation';
 
-                                <p>Thank you for registering for <strong>CARISCA\'s 2025 Supply Chain Research Summit</strong>, 
-                                <strong>July 16–18, 2025</strong>.</p>
-
-                                <p>For information on the summit venue and how to book lodging, visit the 
-                                <a href="https://summit2025.carisca.org" target="_blank" style="color: #0056b3;">summit website</a>.
-                                For any questions not found on the website, please contact:</p>
-
-                                <ul>
-                                    <li>Martin Mawutor K. Agbodzi – <a href="mailto:mmagbodzi@carisca.knust.edu.gh">mmagbodzi@carisca.knust.edu.gh</a></li>
-                                    <li>Amos Ato Eghan – <a href="mailto:aaeghan@carisca.knust.edu.gh">aaeghan@carisca.knust.edu.gh</a></li>
-                                </ul>
-
-                                <p>Thank you for your interest in supply chain research in Africa and for participating in this event.
-                                We are excited to have you join us.</p>
-
-                                <p>Sincerely,<br><strong>2025 Supply Chain Research Summit Planning Committee</strong></p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 15px; background-color: #f9f9f9; font-size: 12px; text-align: center;">
-                                Contact Martin Mawutor K. Agbodzi at 
-                                <a href="mailto:mmagbodzi@carisca.knust.edu.gh">mmagbodzi@carisca.knust.edu.gh</a>
-                            </td>
-                        </tr>
-                    </table>';
+        $firstName = sanitize_input($_POST['first-name']);
+        $mail->Body = "Dear $firstName,\n\nThank you for registering for the CARISCA 2025 Summit.\n\nWe look forward to seeing you at the event.\n\nBest regards,\nCARISCA Team";
 
         $mail->send();
-        echo json_encode(["success" => true, "message" => "Registration saved. You'll receive a confirmation email shortly."]);
-        exit;
     } catch (Exception $e) {
-        echo json_encode(["success" => true, "message" => "Registration saved. Email will be sent shortly."]);
+        echo json_encode(["success" => false, "error" => "Email sending failed: " . $mail->ErrorInfo]);
         exit;
     }
+
+    echo json_encode(["success" => true, "message" => "Registration entry saved and confirmation email sent."]);
+    exit;
 } else {
     echo json_encode(["success" => false, "error" => "Invalid request"]);
     exit;
